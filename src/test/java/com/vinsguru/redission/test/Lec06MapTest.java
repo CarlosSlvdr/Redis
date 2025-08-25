@@ -1,11 +1,14 @@
 package com.vinsguru.redission.test;
 
+import com.vinsguru.redission.test.dto.Student;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RMapReactive;
 import org.redisson.client.codec.StringCodec;
+import org.redisson.codec.TypedJsonJacksonCodec;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +36,23 @@ public class Lec06MapTest extends BaseTest{
 
 
         StepVerifier.create(map.putAll(javaMap).then())
+                .verifyComplete();
+    }
+
+    @Test
+    public void mapTest3() {
+
+        //Map<Integer, Student>
+        TypedJsonJacksonCodec codec = new TypedJsonJacksonCodec(Integer.class, Student.class);
+        RMapReactive<Integer, Student> map = this.client.getMap("users", codec);
+
+        Student student1 = new Student("sam", 10, "atlanta", Arrays.asList(1, 2, 3));
+        Student student2 = new Student("jake", 30, "miami", Arrays.asList(10, 20, 30));
+
+        Mono<Student> mono1 = map.put(1, student1);
+        Mono<Student> mono2 = map.put(2, student2);
+
+        StepVerifier.create(mono1.concatWith(mono2))
                 .verifyComplete();
     }
 }
